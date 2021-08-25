@@ -16,3 +16,4 @@ def fit_model(model, data, label, validation_split=0.3):
         callbacks=[remote_monitor, learning_rate_reduction, early_stop]
     )
 
+

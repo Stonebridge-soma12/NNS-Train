@@ -4,9 +4,9 @@ from urllib import request as req
 import zipfile
 import tensorflow as tf
 import json
-import pandas as pd
 import train
-from sklearn.preprocessing import MinMaxScaler
+from dataset import get_dataset
+from numba import cuda
 
 
 app = Flask(__name__)
@@ -35,28 +35,19 @@ def run():
     body = flask.request.data
     body = json.loads(body)
 
-    data_set = body['data_set']
-
-    df = pd.read_csv(data_set['train_uri'])
-    label = df[data_set['label']]
-    data = df.drop(axis=1, columns=[data_set['label']])
-
-    # Get shape for data set reshaping for compatible with input shape of model.
-    input_shape = list(*model.layers[0].output_shape)
-
-    for i, val in enumerate(input_shape):
-        if val == None:
-            input_shape[i] = -1
-
-    # Data Normalization
-    mms = MinMaxScaler()
-    data = mms.fit_transform(data)
-
-    # Data reshape.
-    data = data.reshape(input_shape)
+    data, label = get_dataset(body, model)
 
     # Fit model
-    train.fit_model(model, data, label)
+    try:
+        train.fit_model(model, data, label)
+    except RuntimeError as e:
+        return e
+
+    # for releasing GPU memory
+    device = cuda.get_current_device()
+    device.reset()
+
+    print('Train finished.')
 
     return "I'm gonna fucking mad."
 
