@@ -26,8 +26,9 @@ def get_input_shape(data, shape):
     return new_shape
 
 
-def normalization(data, method):
+def normalization(data, norm):
     res = data
+    method = norm['method']
     if method == 'MinMax':
         mms = MinMaxScaler()
         res = mms.fit_transform(res)
@@ -36,6 +37,8 @@ def normalization(data, method):
         res = ss.fit_transform(res)
     elif method == 'Image':
         res /= 255.0
+    else:
+        pass
 
     return res
 
