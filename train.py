@@ -15,13 +15,13 @@ class Model:
     __config = None
     model = None
 
-    def __init__(self, config):
+    def __init__(self, config, uid):
         self.__config = config
         self.__epochs = config['epochs']
         self.__batch_size = config['batch_size']
-        self.__early_stop = self.config['early_stop']
-        self.__learning_rate_reduction = self.config['learning_rate_reduction']
-        self.model = get_model_from_url("http://127.0.0.1:8080/model")
+        self.__early_stop = config['early_stop']
+        self.__learning_rate_reduction = config['learning_rate_reduction']
+        self.model = get_model_from_url("http://127.0.0.1:8081/model", uid)
 
     def __get_callbacks(self):
         callbacks = []
@@ -74,9 +74,18 @@ class Model:
         device.reset()
 
 
-def get_model_from_url(url):
+def get_model_from_url(url, id):
     # Get Saved model and Unzip
-    r = req.Request("http://127.0.0.1:8080/model")
+    header = {
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_3_2 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13F69 Safari/601.1',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3', 'Accept-Encoding': 'none',
+        'Accept-Language': 'en-US,en;q=0.8', 'Connection': 'keep-alive',
+        'id': id
+
+    }
+
+    r = req.Request("http://127.0.0.1:8081/model", headers=header)
 
     open('./Model.zip', 'wb').write(req.urlopen(r).read())
 

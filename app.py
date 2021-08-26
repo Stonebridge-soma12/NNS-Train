@@ -18,7 +18,7 @@ def run():
     # Load dataset
     body = flask.request.data
     body = json.loads(body)
-    model = Model(body)
+    model = Model(body, flask.request.headers['id'])
 
     data, label = get_dataset(body, model.model)
     model.fit(data, label)
