@@ -23,7 +23,8 @@ class Model:
         self.__early_stop = config['early_stop']
         self.__learning_rate_reduction = config['learning_rate_reduction']
         self.__id = uid
-        self.model = get_model_from_url(f'http://{os.environ.get("CONVERT_SERVER")}/model', uid)
+        convert_server = os.environ.get('CONVERT_SERVER')
+        self.model = get_model_from_url(f'http://{convert_server}/model', uid)
 
     def __get_callbacks(self):
         callbacks = []
