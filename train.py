@@ -57,7 +57,7 @@ class Model:
 
         return callbacks
 
-    def fit(self, data, label, id):
+    def fit(self, data, label):
         callbacks = self.__get_callbacks()
 
         self.model.fit(
