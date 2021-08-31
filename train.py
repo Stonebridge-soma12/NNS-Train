@@ -13,6 +13,7 @@ class Model:
     __early_stop = None
     __learning_rate_reduction = True
     __config = None
+    __id = None
     model = None
 
     def __init__(self, config, uid):
@@ -21,7 +22,8 @@ class Model:
         self.__batch_size = config['batch_size']
         self.__early_stop = config['early_stop']
         self.__learning_rate_reduction = config['learning_rate_reduction']
-        self.model = get_model_from_url("http://127.0.0.1:8081/model", uid)
+        self.__id = uid
+        self.model = get_model_from_url(f'http://{os.environ.get("CONVERT_SERVER")}/model', uid)
 
     def __get_callbacks(self):
         callbacks = []
@@ -54,7 +56,7 @@ class Model:
 
         return callbacks
 
-    def fit(self, data, label):
+    def fit(self, data, label, id):
         callbacks = self.__get_callbacks()
 
         self.model.fit(
@@ -66,7 +68,7 @@ class Model:
         )
 
         # Remove model.
-        shutil.rmtree('./Model')
+        shutil.rmtree(f'./{self.__id}/Model')
         os.remove('./model.zip')
 
         # for releasing GPU memory
@@ -85,7 +87,7 @@ def get_model_from_url(url, id):
 
     }
 
-    r = req.Request("http://127.0.0.1:8081/model", headers=header)
+    r = req.Request(url, headers=header)
 
     open('./Model.zip', 'wb').write(req.urlopen(r).read())
 
@@ -94,6 +96,6 @@ def get_model_from_url(url, id):
         print('extracting...')
 
     # Load model
-    model = tf.keras.models.load_model('./Model')
+    model = tf.keras.models.load_model(f'./{id}/Model')
 
     return model
