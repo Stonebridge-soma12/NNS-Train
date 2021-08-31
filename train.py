@@ -70,7 +70,7 @@ class Model:
 
         # Remove model.
         shutil.rmtree(f'./{self.__id}/Model')
-        os.remove('./model.zip')
+        os.remove('./Model.zip')
 
         # for releasing GPU memory
         device = cuda.get_current_device()
