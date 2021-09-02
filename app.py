@@ -1,32 +1,56 @@
-import flask
-from flask import Flask
 import json
+import os
+
+import pika
 from train import Model
 from dataset import get_dataset
-from datetime import datetime
-
-app = Flask(__name__)
+import tensorflow as tf
 
 
-@app.route('/')
-def hello_world():  # put application's code here
-    return 'Hello World!'
+class Trainer:
+    connection = None
+    channel = None
+    queue = ''
 
+    def __init__(self, host, queue):
+        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=host))
+        self.channel = self.connection.channel()
+        self.queue = queue
 
-@app.route('/run', methods=['GET', 'POST'])
-def run():
-    # Load dataset
-    body = flask.request.data
-    body = json.loads(body)
-    model = Model(body, flask.request.headers['id'])
+    def train_callback(self, ch, method, props, body):
+        req_body = json.loads(body)
 
-    data, label = get_dataset(body, model.model)
-    model.fit(data, label)
+        model = Model(req_body['config'], req_body['id'])
 
-    return flask.jsonify(
-        finished_time=datetime.now()
-    )
+        data, label = get_dataset(body['dataset'], model.model)
+
+        try:
+            model.fit(data, label)
+        except tf.errors.InvalidArgumentError as e:
+            res = {'status': 500, 'msg': e}
+        except tf.errors.AbortedError as e:
+            res = {'status': 500, 'msg': e}
+        else:
+            res = {'status': 200, 'msg': None}
+
+        res = json.dumps(res).encode('utf-8')
+
+        self.channel.basic_publish(
+            exchange='',
+            routing_key=props.reply_to,
+            properties=pika.BasicProperties(
+                correlation_id=props.correlation_id,
+            ),
+            body=res
+        )
+
+    def run(self):
+        self.channel.basic_consume(queue=self.queue, on_message_callback=self.train_callback, auto_ack=True)
+
+        print(' [*] Waiting for messages. To exit press CTRL+C')
+        self.channel.start_consuming()
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    train = Trainer(host='0.0.0.0', queue='train')
+    train.run()

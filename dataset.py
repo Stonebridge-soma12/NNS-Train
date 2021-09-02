@@ -12,7 +12,11 @@ def load_data(data_config):
         return e
 
     label = df[data_config['label']]
-    df = df.drop(axis=1, columns=[data_config['label']])
+
+    if data_config['normalization'] == 'image':
+        df = get_image_data_from_csv(df)
+    else:
+        df = df.drop(axis=1, columns=[data_config['label']])
 
     return df, label
 
@@ -46,9 +50,7 @@ def normalization(data, norm):
     return res
 
 
-def get_dataset(req_body, model):
-    data_config = req_body['data_set']
-
+def get_dataset(data_config, model):
     shape = list(*model.layers[0].output_shape)
 
     data, label = load_data(data_config)
@@ -81,4 +83,3 @@ def get_image_data_from_csv(df):
 
     return images
 
-# TODO: 데이터타입을 보고 이미지일 경우 이미지에 맞게 프로세싱
