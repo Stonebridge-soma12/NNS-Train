@@ -17,6 +17,7 @@ class Model:
     model = None
 
     def __init__(self, config, uid):
+        print(config)
         self.__config = config
         self.__epochs = config['epochs']
         self.__batch_size = config['batch_size']
