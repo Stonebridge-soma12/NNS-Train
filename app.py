@@ -63,6 +63,7 @@ class Trainer:
 
     def run(self):
         self.channel.queue_declare(queue=self.queue)
+        self.channel.basic_qos(prefetch_count=1)
         self.channel.basic_consume(queue=self.queue, on_message_callback=self.train_callback, auto_ack=True)
 
         print(' [*] Waiting for messages. To exit press CTRL+C')
