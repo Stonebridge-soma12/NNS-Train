@@ -1,6 +1,9 @@
+import os
+
 from trainer import Trainer
 
 if __name__ == '__main__':
     print('run')
-    train = Trainer(host='localhost', queue='Request')
+    host = os.environ['RABBIT_HOST']
+    train = Trainer(host=host, queue='Request')
     train.run()
