@@ -59,7 +59,7 @@ class Trainer:
     queue = ''
 
     def __init__(self, host, queue):
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=host))
+        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=host, virtual_host=os.environ['VHOST']))
         self.channel = self.connection.channel()
         self.queue = queue
 
