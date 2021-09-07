@@ -48,6 +48,8 @@ def train_callback(ch, method, props, body):
     except:
         pass
 
+    model.save_model()
+
     print('Finished message callback.')
 
 
