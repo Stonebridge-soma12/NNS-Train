@@ -7,3 +7,4 @@ if __name__ == '__main__':
     host = os.environ['RABBIT_HOST']
     train = Trainer(host=host, queue='Request')
     train.run()
+
