@@ -1,9 +1,11 @@
 import os
 import shutil
+import datetime
 import zipfile
 from urllib import request as req
 import tensorflow as tf
 from numba import cuda
+import requests
 
 
 class Model:
@@ -17,6 +19,7 @@ class Model:
     model = None
 
     def __init__(self, config, uid):
+        print(config)
         self.__config = config
         self.__epochs = config['epochs']
         self.__batch_size = config['batch_size']
@@ -65,16 +68,39 @@ class Model:
             epochs=self.__epochs,
             batch_size=self.__batch_size,
             validation_split=self.__validation_split,
-            callbacks=callbacks
+            callbacks=callbacks,
+
         )
+
+    def save_model(self):
+        current = datetime.datetime.now()
+        model_path = f'{self.__id}/{current.strftime("%Y%m%d-%H-%M-%S")}'
+        self.model.save(model_path)
+
+        # zip model
+        zip_name = f'{self.__id}-{current.strftime("%Y%m%d-%H-%M-%S")}'
+        shutil.make_archive(zip_name, 'zip', f'./{model_path}')
+
+        # post model to api server
+        model_file = open(f'./{zip_name}.zip', 'rb')
+        file = {'files': model_file}
+        body = {'id': self.__id}
+
+        res = requests.post(os.environ['TRAINED_API'], files=file, data=body)
+        model_file.close()
 
         # Remove model.
         shutil.rmtree(f'./{self.__id}/Model')
+        shutil.rmtree(f'./{self.__id}')
         os.remove('./Model.zip')
+        os.remove(f'./{zip_name}.zip')
 
         # for releasing GPU memory
         device = cuda.get_current_device()
         device.reset()
+
+        return res
+
 
 
 def get_model_from_url(url, id):
@@ -90,11 +116,14 @@ def get_model_from_url(url, id):
 
     r = req.Request(url, headers=header)
 
-    open('./Model.zip', 'wb').write(req.urlopen(r).read())
+    model = open('./Model.zip', 'wb')
+    model.write(req.urlopen(r).read())
+    model.close()
 
     with zipfile.ZipFile('./Model.zip', 'r') as zip_ref:
         zip_ref.extractall('./')
         print('extracting...')
+
 
     # Load model
     model = tf.keras.models.load_model(f'./{id}/Model')
