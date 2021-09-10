@@ -36,6 +36,7 @@ def get_input_shape(data, shape):
 def normalization(data, norm):
     res = data
     method = norm['method']
+
     if method == 'MinMax':
         mms = MinMaxScaler()
         res = mms.fit_transform(res)
@@ -82,4 +83,5 @@ def get_image_data_from_csv(df):
         images.append(image)
 
     return images
+
 
