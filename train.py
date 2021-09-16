@@ -101,6 +101,7 @@ class Model:
 
         return res
 
+
 def get_model_from_url(url, id):
     # Get Saved model and Unzip
     header = {
