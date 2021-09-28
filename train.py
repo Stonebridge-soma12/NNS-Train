@@ -15,7 +15,7 @@ class Model:
     __early_stop = None
     __learning_rate_reduction = True
     __config = None
-    __id = None
+    __user_id = None
     __train_id = None
     model = None
 
@@ -26,7 +26,7 @@ class Model:
         self.__batch_size = config['batch_size']
         self.__early_stop = config['early_stop']
         self.__learning_rate_reduction = config['learning_rate_reduction']
-        self.__id = uid
+        self.__user_id = uid
         self.__train_id = train_id
         convert_server = os.environ['CONVERT_SERVER']
         self.model = get_model_from_url(f'http://{convert_server}/model', uid)
@@ -52,10 +52,10 @@ class Model:
             callbacks.append(learning_rate_reduction)
 
         remote_monitor = tf.keras.callbacks.RemoteMonitor(
-            root='http://localohst:8080',
-            path='/publish/epoch/end',
+            root='http://localhost:8080',
+            path=f'/api/project/1/train/{self.__train_id}/epoch',
             field='data',
-            headers={'train_id': self.__train_id},
+            headers={'train_id': str(self.__train_id)},
             send_as_json=True
         )
         callbacks.append(remote_monitor)
@@ -78,24 +78,27 @@ class Model:
 
     def save_model(self):
         current = datetime.datetime.now()
-        model_path = f'{self.__id}/{current.strftime("%Y%m%d-%H-%M-%S")}'
+        model_path = f'{self.__user_id}/{current.strftime("%Y%m%d-%H-%M-%S")}'
         self.model.save(model_path)
 
         # zip model
-        zip_name = f'{self.__id}-{current.strftime("%Y%m%d-%H-%M-%S")}'
+        zip_name = f'{self.__user_id}-{current.strftime("%Y%m%d-%H-%M-%S")}'
         shutil.make_archive(zip_name, 'zip', f'./{model_path}')
 
         # post model to api server
         model_file = open(f'./{zip_name}.zip', 'rb')
-        file = {'files': model_file}
-        body = {'id': self.__id}
+        file = {'model': model_file}
+        body = {
+            'user_id': self.__user_id,
+            'train_id': self.__train_id
+        }
 
         res = requests.post(os.environ['TRAINED_API'], files=file, data=body)
         model_file.close()
 
         # Remove model.
-        shutil.rmtree(f'./{self.__id}/Model')
-        shutil.rmtree(f'./{self.__id}')
+        shutil.rmtree(f'./{self.__user_id}/Model')
+        shutil.rmtree(f'./{self.__user_id}')
         os.remove('./Model.zip')
         os.remove(f'./{zip_name}.zip')
 

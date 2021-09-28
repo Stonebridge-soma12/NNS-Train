@@ -33,9 +33,13 @@ class Trainer:
 def train_callback(ch, method, props, body):
     data = None
     label = None
-    headers = {'Content-Type': 'application/json; charset=utf-8'}
 
     req_body = json.loads(body)
+
+    headers = {
+        'Content-Type': 'application/json; charset=utf-8',
+        'train_id': str(req_body['train_id'])
+    }
 
     model = Model(req_body['config'], req_body['id'], req_body['train_id'])
 
@@ -43,40 +47,40 @@ def train_callback(ch, method, props, body):
         data, label = get_dataset(req_body['data_set'], model.model)
     except urllib.error.URLError as e:
         res = {'status': 400, 'msg': str(e.args[0])}
-        reply_request(os.environ['REPLY_API'], res, headers)
+        reply_request(f'http://localhost:8080/api/project/1/train/{req_body["train_id"]}/reply', res, headers)
 
     try:
         model.fit(data, label)
     except tf.errors.InvalidArgumentError as e:
         res = {'status': 500, 'msg': e, 'train_id': req_body['train_id']}
-        reply_request(os.environ['REPLY_API'], res, headers)
+        reply_request(f'http://localhost:8080/api/project/1/train/{req_body["train_id"]}/reply', res, headers)
         return
     except tf.errors.AbortedError as e:
         res = {'status': 500, 'msg': e, 'train_id': req_body['train_id']}
-        reply_request(os.environ['REPLY_API'], res, headers)
+        reply_request(f'http://localhost:8080/api/project/1/train/{req_body["train_id"]}/reply', res, headers)
         return
     except tf.errors.FailedPreconditionError as e:
         res = {'status': 500, 'msg': e, 'train_id': req_body['train_id']}
-        reply_request(os.environ['REPLY_API'], res, headers)
+        reply_request(f'http://localhost:8080/api/project/1/train/{req_body["train_id"]}/reply', res, headers)
         return
     except tf.errors.UnknownError as e:
         res = {'status': 500, 'msg': e, 'train_id': req_body['train_id']}
-        reply_request(os.environ['REPLY_API'], res, headers)
+        reply_request(f'http://localhost:8080/api/project/1/train/{req_body["train_id"]}/reply', res, headers)
         return
 
     try:
         model.save_model()
     except:
         res = {'status': 500, 'msg': 'OS error', 'train_id': req_body['train_id']}
-        reply_request(os.environ['REPLY_API'], res, headers)
+        reply_request(f'http://localhost:8080/api/project/1/train/{req_body["train_id"]}/reply', res, headers)
         return
 
     # for releasing GPU memory
-    device = cuda.get_current_device()
-    device.reset()
+    # device = cuda.get_current_device()
+    # device.reset()
 
     res = {'status': 200, 'msg': '', 'train_id': req_body['train_id']}
-    reply_request(os.environ['REPLY_API'], res, headers)
+    reply_request(f'http://localhost:8080/api/project/1/train/{req_body["train_id"]}/reply', res, headers)
     return
 
 
