@@ -41,7 +41,7 @@ def train_callback(ch, method, props, body):
         'train_id': str(req_body['train_id'])
     }
 
-    model = Model(req_body['config'], req_body['id'], req_body['train_id'])
+    model = Model(req_body['config'], req_body['user_id'], req_body['train_id'])
 
     try:
         data, label = get_dataset(req_body['data_set'], model.model)
