@@ -88,12 +88,8 @@ class Model:
         # post model to api server
         model_file = open(f'./{zip_name}.zip', 'rb')
         file = {'model': model_file}
-        body = {
-            'user_id': self.__user_id,
-            'train_id': self.__train_id
-        }
 
-        res = requests.post(os.environ['TRAINED_API'], files=file, data=body)
+        res = requests.post(f'localhost:8080/api/train{self.__train_id}/model', files=file)
         model_file.close()
 
         # Remove model.
