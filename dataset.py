@@ -36,6 +36,7 @@ def get_input_shape(data, shape):
 def normalization(data, norm):
     res = data
     method = norm['method']
+
     if method == 'MinMax':
         mms = MinMaxScaler()
         res = mms.fit_transform(res)
@@ -61,13 +62,7 @@ def get_dataset(data_config, model):
 
 
 def url_to_image(url):
-    header = {
-        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_3_2 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13F69 Safari/601.1',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3', 'Accept-Encoding': 'none',
-        'Accept-Language': 'en-US,en;q=0.8', 'Connection': 'keep-alive',
-    }
-    r = req.Request(url, headers=header)
+    r = req.Request(url)
     res = req.urlopen(r)
     image = np.asarray(bytearray(res.read()), dtype="uint8")
     image = cv2.imdecode(image, cv2.IMREAD_COLOR)
@@ -82,4 +77,5 @@ def get_image_data_from_csv(df):
         images.append(image)
 
     return images
+
 

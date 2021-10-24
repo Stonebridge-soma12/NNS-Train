@@ -7,50 +7,7 @@ from dataset import get_dataset
 import tensorflow as tf
 import requests
 import os
-
-
-def train_callback(ch, method, props, body):
-    data = None
-    label = None
-    headers = {'Content-Type': 'application/json; charset=utf-8'}
-
-    req_body = json.loads(body)
-
-    model = Model(req_body['config'], req_body['id'])
-
-    try:
-        data, label = get_dataset(req_body['data_set'], model.model)
-    except urllib.error.URLError as e:
-        res = {'status': 500, 'msg': str(e.args[0])}
-        res = json.dumps(res).encode('utf-8')
-        print(e.args[0])
-        try:
-            res = requests.post(os.environ['REPLY_API'], data=res, headers=headers)
-        except:
-            pass
-
-        return
-
-    try:
-        model.fit(data, label)
-    except tf.errors.InvalidArgumentError as e:
-        res = {'status': 500, 'msg': e}
-    except tf.errors.AbortedError as e:
-        res = {'status': 500, 'msg': e}
-    else:
-        res = {'status': 200, 'msg': None}
-
-    print(res['msg'])
-
-    res = json.dumps(res).encode('utf-8')
-    try:
-        res = requests.post(os.environ['REPLY_API'], data=res, headers=headers)
-    except:
-        pass
-
-    model.save_model()
-
-    print('Finished message callback.')
+from numba import cuda
 
 
 class Trainer:
@@ -59,7 +16,8 @@ class Trainer:
     queue = ''
 
     def __init__(self, host, queue):
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=host))
+        self.connection = pika.BlockingConnection(
+            pika.ConnectionParameters(host=host, virtual_host=os.environ['VHOST']))
         self.channel = self.connection.channel()
         self.queue = queue
 
@@ -70,3 +28,67 @@ class Trainer:
 
         print(' [*] Waiting for messages. To exit press CTRL+C')
         self.channel.start_consuming()
+
+
+def train_callback(ch, method, props, body):
+    data = None
+    label = None
+
+    req_body = json.loads(body)
+
+    headers = {
+        'Content-Type': 'application/json; charset=utf-8',
+        'train_id': str(req_body['train_id'])
+    }
+
+    model = Model(req_body['config'], req_body['user_id'], req_body['train_id'])
+
+    try:
+        data, label = get_dataset(req_body['data_set'], model.model)
+    except urllib.error.URLError as e:
+        res = {'status': 400, 'msg': str(e.args[0])}
+        reply_request(f'http://localhost:8080/api/project/1/train/{req_body["train_id"]}/reply', res, headers)
+
+    try:
+        model.fit(data, label)
+    except tf.errors.InvalidArgumentError as e:
+        res = {'status': 500, 'msg': e, 'train_id': req_body['train_id']}
+        reply_request(f'http://localhost:8080/api/project/1/train/{req_body["train_id"]}/reply', res, headers)
+        return
+    except tf.errors.AbortedError as e:
+        res = {'status': 500, 'msg': e, 'train_id': req_body['train_id']}
+        reply_request(f'http://localhost:8080/api/project/1/train/{req_body["train_id"]}/reply', res, headers)
+        return
+    except tf.errors.FailedPreconditionError as e:
+        res = {'status': 500, 'msg': e, 'train_id': req_body['train_id']}
+        reply_request(f'http://localhost:8080/api/project/1/train/{req_body["train_id"]}/reply', res, headers)
+        return
+    except tf.errors.UnknownError as e:
+        res = {'status': 500, 'msg': e, 'train_id': req_body['train_id']}
+        reply_request(f'http://localhost:8080/api/project/1/train/{req_body["train_id"]}/reply', res, headers)
+        return
+
+    try:
+        model.save_model()
+    except:
+        res = {'status': 500, 'msg': 'OS error', 'train_id': req_body['train_id']}
+        reply_request(f'http://localhost:8080/api/project/1/train/{req_body["train_id"]}/reply', res, headers)
+        return
+
+    # for releasing GPU memory
+    # device = cuda.get_current_device()
+    # device.reset()
+
+    res = {'status': 200, 'msg': '', 'train_id': req_body['train_id']}
+    reply_request(f'http://localhost:8080/api/project/1/train/{req_body["train_id"]}/reply', res, headers)
+    return
+
+
+def reply_request(url, data, headers):
+    data = json.dumps(data).encode('utf-8')
+    try:
+        res = requests.post(url, data=data, headers=headers)
+    except urllib.error.URLError as e:
+        return e
+    else:
+        return res

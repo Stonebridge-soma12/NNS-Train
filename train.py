@@ -15,17 +15,19 @@ class Model:
     __early_stop = None
     __learning_rate_reduction = True
     __config = None
-    __id = None
+    __user_id = None
+    __train_id = None
     model = None
 
-    def __init__(self, config, uid):
+    def __init__(self, config, uid, train_id):
         print(config)
         self.__config = config
         self.__epochs = config['epochs']
         self.__batch_size = config['batch_size']
         self.__early_stop = config['early_stop']
         self.__learning_rate_reduction = config['learning_rate_reduction']
-        self.__id = uid
+        self.__user_id = uid
+        self.__train_id = train_id
         convert_server = os.environ['CONVERT_SERVER']
         self.model = get_model_from_url(f'http://{convert_server}/model', uid)
 
@@ -50,10 +52,10 @@ class Model:
             callbacks.append(learning_rate_reduction)
 
         remote_monitor = tf.keras.callbacks.RemoteMonitor(
-            root='http://localohst:8080',
-            path='/publish/epoch/end',
+            root='http://localhost:8080',
+            path=f'/api/project/1/train/{self.__train_id}/epoch',
             field='data',
-            headers=None,
+            headers={'train_id': str(self.__train_id)},
             send_as_json=True
         )
         callbacks.append(remote_monitor)
@@ -72,46 +74,37 @@ class Model:
 
         )
 
+        return None
+
     def save_model(self):
         current = datetime.datetime.now()
-        model_path = f'{self.__id}/{current.strftime("%Y%m%d-%H-%M-%S")}'
+        model_path = f'{self.__user_id}/{current.strftime("%Y%m%d-%H-%M-%S")}'
         self.model.save(model_path)
 
         # zip model
-        zip_name = f'{self.__id}-{current.strftime("%Y%m%d-%H-%M-%S")}'
+        zip_name = f'{self.__user_id}-{current.strftime("%Y%m%d-%H-%M-%S")}'
         shutil.make_archive(zip_name, 'zip', f'./{model_path}')
 
         # post model to api server
         model_file = open(f'./{zip_name}.zip', 'rb')
-        file = {'files': model_file}
-        body = {'id': self.__id}
+        file = {'model': model_file}
 
-        res = requests.post(os.environ['TRAINED_API'], files=file, data=body)
+        res = requests.post(f'localhost:8080/api/train{self.__train_id}/model', files=file)
         model_file.close()
 
         # Remove model.
-        shutil.rmtree(f'./{self.__id}/Model')
-        shutil.rmtree(f'./{self.__id}')
+        shutil.rmtree(f'./{self.__user_id}/Model')
+        shutil.rmtree(f'./{self.__user_id}')
         os.remove('./Model.zip')
         os.remove(f'./{zip_name}.zip')
 
-        # for releasing GPU memory
-        device = cuda.get_current_device()
-        device.reset()
-
         return res
-
 
 
 def get_model_from_url(url, id):
     # Get Saved model and Unzip
     header = {
-        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_3_2 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13F69 Safari/601.1',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3', 'Accept-Encoding': 'none',
-        'Accept-Language': 'en-US,en;q=0.8', 'Connection': 'keep-alive',
         'id': id
-
     }
 
     r = req.Request(url, headers=header)
