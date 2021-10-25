@@ -29,7 +29,7 @@ class Model:
         self.__user_id = uid
         self.__train_id = train_id
         convert_server = os.environ['CONVERT_SERVER']
-        self.model = get_model_from_url(f'http://{convert_server}/model', uid)
+        self.model = get_model_from_url(f'http://{convert_server}/api/model', uid)
 
     def __get_callbacks(self):
         callbacks = []
