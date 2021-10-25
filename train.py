@@ -17,9 +17,10 @@ class Model:
     __config = None
     __user_id = None
     __train_id = None
+    __project_no = None
     model = None
 
-    def __init__(self, config, uid, train_id):
+    def __init__(self, config, uid, train_id, project_no):
         print(config)
         self.__config = config
         self.__epochs = config['epochs']
@@ -52,8 +53,8 @@ class Model:
             callbacks.append(learning_rate_reduction)
 
         remote_monitor = tf.keras.callbacks.RemoteMonitor(
-            root='http://localhost:8080',
-            path=f'/api/project/1/train/{self.__train_id}/epoch',
+            root=os.environ['API_SERVER'],
+            path=f'/api/project/{self.__project_no}/train/{self.__train_id}/epoch',
             field='data',
             headers={'train_id': str(self.__train_id)},
             send_as_json=True
@@ -89,7 +90,7 @@ class Model:
         model_file = open(f'./{zip_name}.zip', 'rb')
         file = {'model': model_file}
 
-        res = requests.post(f'localhost:8080/api/train{self.__train_id}/model', files=file)
+        res = requests.post(f'https://{os.environ["API_SERVER"]}/api/train{self.__train_id}/model', files=file)
         model_file.close()
 
         # Remove model.
