@@ -53,7 +53,7 @@ class Model:
             callbacks.append(learning_rate_reduction)
 
         remote_monitor = tf.keras.callbacks.RemoteMonitor(
-            root=f'https://{os.environ["API_SERVER"]}',
+            root=f'http://{os.environ["API_SERVER"]}',
             path=f'/api/project/{self.__project_no}/train/{self.__train_id}/epoch',
             field='data',
             headers={'train_id': str(self.__train_id)},
