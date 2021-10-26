@@ -47,32 +47,32 @@ def train_callback(ch, method, props, body):
         data, label = get_dataset(req_body['data_set'], model.model)
     except urllib.error.URLError as e:
         res = {'status': 400, 'msg': str(e.args[0])}
-        reply_request(f'http://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply', res, headers)
+        reply_request(f'https://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply', res, headers)
 
     try:
         model.fit(data, label)
     except tf.errors.InvalidArgumentError as e:
         res = {'status': 500, 'msg': e, 'train_id': req_body['train_id']}
-        reply_request(f'http://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply', res, headers)
+        reply_request(f'https://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply', res, headers)
         return
     except tf.errors.AbortedError as e:
         res = {'status': 500, 'msg': e, 'train_id': req_body['train_id']}
-        reply_request(f'http://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply', res, headers)
+        reply_request(f'https://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply', res, headers)
         return
     except tf.errors.FailedPreconditionError as e:
         res = {'status': 500, 'msg': e, 'train_id': req_body['train_id']}
-        reply_request(f'http://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply', res, headers)
+        reply_request(f'https://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply', res, headers)
         return
     except tf.errors.UnknownError as e:
         res = {'status': 500, 'msg': e, 'train_id': req_body['train_id']}
-        reply_request(f'http://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply', res, headers)
+        reply_request(f'https://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply', res, headers)
         return
 
     try:
         model.save_model()
     except:
         res = {'status': 500, 'msg': 'OS error', 'train_id': req_body['train_id']}
-        reply_request(f'http://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply', res, headers)
+        reply_request(f'https://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply', res, headers)
         return
 
     # for releasing GPU memory
@@ -80,7 +80,7 @@ def train_callback(ch, method, props, body):
     # device.reset()
 
     res = {'status': 200, 'msg': '', 'train_id': req_body['train_id']}
-    reply_request(f'http://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply', res, headers)
+    reply_request(f'https://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply', res, headers)
     return
 
 
