@@ -29,6 +29,7 @@ class Model:
         self.__learning_rate_reduction = config['learning_rate_reduction']
         self.__user_id = uid
         self.__train_id = train_id
+        self.__project_no = project_no
         convert_server = os.environ['CONVERT_SERVER']
         self.model = get_model_from_url(f'http://{convert_server}/api/model', uid)
 
