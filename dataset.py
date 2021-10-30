@@ -46,7 +46,7 @@ def normalization(data, norm):
     elif method == 'Image':
         res /= 255.0
     else:
-        pass
+        res = data.to_numpy()
 
     return res
 
@@ -56,7 +56,7 @@ def get_dataset(data_config, model):
 
     data, label = load_data(data_config)
     data = normalization(data, data_config['normalization'])
-    data = data.values.reshape(get_input_shape(data, shape))
+    data = data.reshape(get_input_shape(data, shape))
 
     return data, label
 
