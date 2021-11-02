@@ -92,6 +92,8 @@ class Model:
         file = {'model': model_file}
 
         res = requests.post(f'https://{os.environ["API_SERVER"]}/api/train/{self.__train_id}/model', files=file)
+        print(f'response from save model api : {res}')
+
         model_file.close()
 
         # Remove model.
@@ -118,7 +120,6 @@ def get_model_from_url(url, id):
     with zipfile.ZipFile('./Model.zip', 'r') as zip_ref:
         zip_ref.extractall('./')
         print('extracting...')
-
 
     # Load model
     model = tf.keras.models.load_model(f'./{id}/Model')

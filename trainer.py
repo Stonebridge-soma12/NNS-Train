@@ -45,8 +45,8 @@ def train_callback(ch, method, props, body):
 
     try:
         data, label = get_dataset(req_body['data_set'], model.model)
-    except urllib.error.URLError as e:
-        res = {'status_code': 400, 'msg': str(e.args[0])}
+    except:
+        res = {'status_code': 400, 'msg': f'failed to get dataset from{req_body["data_set"]["train_uri"]}'}
         reply_request(f'https://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply', res, headers)
 
     try:
@@ -66,6 +66,12 @@ def train_callback(ch, method, props, body):
     except tf.errors.UnknownError as e:
         res = {'status_code': 500, 'msg': e, 'train_id': req_body['train_id']}
         reply_request(f'https://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply', res, headers)
+        return
+    except:
+        res = {'status_code': 500, 'msg': 'internal server error', 'train_id': req_body['train_id']}
+        reply_request(
+            f'https://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply',
+            res, headers)
         return
 
     try:

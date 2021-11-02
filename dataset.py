@@ -1,3 +1,4 @@
+import numpy
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 import cv2
@@ -45,6 +46,7 @@ def normalization(data, norm):
         res = ss.fit_transform(res)
     elif method == 'Image':
         res /= 255.0
+        res = numpy.array(res)
     else:
         res = data.to_numpy()
 
