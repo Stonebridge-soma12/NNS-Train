@@ -80,7 +80,7 @@ def url_to_image(url, shape):
     res = req.urlopen(r)
     image = np.asarray(bytearray(res.read()), dtype="uint8")
     image = cv2.imdecode(image, cv2.IMREAD_COLOR)
-    image = cv2.resize(image, shape)
+    image = cv2.resize(image, shape[1:])
 
     return image
 
