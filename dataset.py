@@ -46,8 +46,7 @@ def normalization(data, norm):
         ss = StandardScaler()
         res = ss.fit_transform(res)
     elif method == 'Image':
-        res /= 255.0
-        res = numpy.array(res)
+        None
     else:
         res = data.to_numpy()
 
@@ -60,7 +59,7 @@ def get_dataset(data_config, model):
     data, label = load_data(data_config)
     norm_type = data_config['normalization']
 
-    if data_config['normalization'] == 'Image':
+    if norm_type == 'Image':
         # preprocessing for image data
         datagen = ImageDataGenerator(rescale=1.0/255.0)
         data = datagen.flow(
