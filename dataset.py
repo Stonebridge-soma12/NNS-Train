@@ -61,7 +61,7 @@ def get_dataset(data_config, model):
 
     print(norm_type)
 
-    if norm_type == 'Image':
+    if norm_type.method == 'Image':
         # preprocessing for image data
         datagen = ImageDataGenerator(rescale=1.0/255.0)
         data = datagen.flow(
