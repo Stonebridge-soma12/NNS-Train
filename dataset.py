@@ -86,7 +86,7 @@ def url_to_image(url):
 
 def get_image_data_from_csv(df):
     images = []
-    for url in df['image']:
+    for url in df['url']:
         image = url_to_image(url)
         images.append(image)
 
