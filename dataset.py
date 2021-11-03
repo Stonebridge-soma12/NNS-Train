@@ -7,7 +7,7 @@ from urllib import request as req
 import numpy as np
 
 
-def load_data(data_config):
+def load_data(data_config, shape):
     try:
         df = pd.read_csv(data_config['train_uri'])
     except ConnectionError as e:
@@ -16,7 +16,7 @@ def load_data(data_config):
     label = df[data_config['label']]
 
     if data_config['normalization']['method'] == 'Image':
-        df = get_image_data_from_csv(df)
+        df = get_image_data_from_csv(df, shape)
     else:
         df = df.drop(axis=1, columns=[data_config['label']])
 
@@ -56,7 +56,7 @@ def normalization(data, norm):
 def get_dataset(data_config, model):
     shape = list(*model.layers[0].output_shape)
 
-    data, label = load_data(data_config)
+    data, label = load_data(data_config, shape)
     norm_type = data_config['normalization']
 
     print(norm_type)
@@ -75,19 +75,20 @@ def get_dataset(data_config, model):
     return data, label
 
 
-def url_to_image(url):
+def url_to_image(url, shape):
     r = req.Request(url)
     res = req.urlopen(r)
     image = np.asarray(bytearray(res.read()), dtype="uint8")
     image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+    image = cv2.resize(image, shape)
 
     return image
 
 
-def get_image_data_from_csv(df):
+def get_image_data_from_csv(df, shape):
     images = []
     for url in df['url']:
-        image = url_to_image(url)
+        image = url_to_image(url, shape)
         images.append(image)
 
     return images
