@@ -43,8 +43,8 @@ def train_callback(ch, method, props, body):
 
     model = Model(req_body['config'], req_body['user_id'], req_body['train_id'], req_body['project_no'])
 
-    try:
-        data, label = get_dataset(req_body['data_set'], model.model)
+    # try:
+    data, label = get_dataset(req_body['data_set'], model.model)
     # except:
     #     res = {'status_code': 400, 'msg': f'failed to get dataset from {req_body["data_set"]["train_uri"]}', 'train_id': req_body['train_id']}
     #     reply_request(f'https://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply', res, headers)
