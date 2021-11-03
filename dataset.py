@@ -65,7 +65,7 @@ def get_dataset(data_config, model):
         # preprocessing for image data
         datagen = ImageDataGenerator(rescale=1.0/255.0)
         data = datagen.flow(
-            x=data, y=label,
+            x=np.array(data), y=np.array(label),
         )
         label = None
     else:
@@ -80,7 +80,9 @@ def url_to_image(url, shape):
     res = req.urlopen(r)
     image = np.asarray(bytearray(res.read()), dtype="uint8")
     image = cv2.imdecode(image, cv2.IMREAD_COLOR)
-    image = cv2.resize(image, shape[1:])
+    print(shape)
+    print(shape[1:3])
+    image = cv2.resize(image, shape[1:3])
 
     return image
 
