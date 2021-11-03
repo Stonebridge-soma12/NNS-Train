@@ -15,7 +15,7 @@ def load_data(data_config):
 
     label = df[data_config['label']]
 
-    if data_config['normalization']['method'] == 'image':
+    if data_config['normalization']['method'] == 'Image':
         df = get_image_data_from_csv(df)
     else:
         df = df.drop(axis=1, columns=[data_config['label']])
