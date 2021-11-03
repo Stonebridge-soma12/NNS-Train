@@ -1,6 +1,7 @@
 import numpy
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import cv2
 from urllib import request as req
 import numpy as np
@@ -57,8 +58,18 @@ def get_dataset(data_config, model):
     shape = list(*model.layers[0].output_shape)
 
     data, label = load_data(data_config)
-    data = normalization(data, data_config['normalization'])
-    data = data.reshape(get_input_shape(data, shape))
+    norm_type = data_config['normalization']
+
+    if data_config['normalization'] == 'Image':
+        # preprocessing for image data
+        datagen = ImageDataGenerator(rescale=1.0/255.0)
+        data = datagen.flow(
+            x=data, y=label,
+        )
+        label = None
+    else:
+        data = normalization(data, norm_type)
+        data = data.reshape(get_input_shape(data, shape))
 
     return data, label
 

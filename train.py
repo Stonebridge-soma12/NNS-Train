@@ -67,14 +67,23 @@ class Model:
     def fit(self, data, label):
         callbacks = self.__get_callbacks()
 
-        self.model.fit(
-            data, label,
-            epochs=self.__epochs,
-            batch_size=self.__batch_size,
-            validation_split=self.__validation_split,
-            callbacks=callbacks,
+        if label == None:
+            self.model.fit(
+                data,
+                epochs=self.__epochs,
+                batch_size=self.__batch_size,
+                validation_split=self.__validation_split,
+                callbacks=callbacks,
+            )
+        else:
+            self.model.fit(
+                data, label,
+                epochs=self.__epochs,
+                batch_size=self.__batch_size,
+                validation_split=self.__validation_split,
+                callbacks=callbacks,
 
-        )
+            )
 
         return None
 
