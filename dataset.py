@@ -59,6 +59,8 @@ def get_dataset(data_config, model):
     data, label = load_data(data_config)
     norm_type = data_config['normalization']
 
+    print(norm_type)
+
     if norm_type == 'Image':
         # preprocessing for image data
         datagen = ImageDataGenerator(rescale=1.0/255.0)
@@ -68,7 +70,7 @@ def get_dataset(data_config, model):
         label = None
     else:
         data = normalization(data, norm_type)
-        data = data.reshape(get_input_shape(data, shape))
+        data = data.values.reshape(get_input_shape(data, shape))
 
     return data, label
 
