@@ -81,7 +81,7 @@ def get_dataset(data_config, model):
         label = None
     else:
         data = normalization(data, norm_type)
-        data = data.values.reshape(get_input_shape(data, shape))
+        data = data.reshape(get_input_shape(data, shape))
 
     return data, label
 
@@ -91,8 +91,6 @@ def url_to_image(url, shape):
     res = req.urlopen(r)
     image = np.asarray(bytearray(res.read()), dtype="uint8")
     image = cv2.imdecode(image, cv2.IMREAD_COLOR)
-    print(shape)
-    print(shape[1:3])
     image = cv2.resize(image, shape[1:3])
 
     return image
