@@ -1,6 +1,7 @@
 import numpy
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.model_selection import train_test_split
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import cv2
 from urllib import request as req
@@ -63,10 +64,20 @@ def get_dataset(data_config, model):
 
     if norm_type['method'] == 'Image':
         # preprocessing for image data
-        datagen = ImageDataGenerator(rescale=1.0/255.0)
-        data = datagen.flow(
-            x=np.array(data), y=np.array(label),
+        x = np.array(data)
+        y = np.array(label)
+
+        x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.3, stratify=y)
+
+        datagen = ImageDataGenerator(rescale=1.0/255.0, validation_split=0.3)
+        train = datagen.flow(
+            x=x_train, y=y_train, subset='training'
         )
+        valid = datagen.flow(
+            x=x_val, y=y_val, subset='validation'
+        )
+        
+        data = [train, valid]
         label = None
     else:
         data = normalization(data, norm_type)

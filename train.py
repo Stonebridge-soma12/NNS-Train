@@ -69,10 +69,10 @@ class Model:
 
         if label == None:
             self.model.fit(
-                data,
+                data[0],
+                validation_data=data[1],
                 epochs=self.__epochs,
                 batch_size=self.__batch_size,
-                validation_split=self.__validation_split,
                 callbacks=callbacks,
             )
         else:
