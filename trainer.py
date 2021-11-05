@@ -41,8 +41,12 @@ def train_callback(ch, method, props, body):
         'Content-Type': 'application/json; charset=utf-8',
         'train_id': str(req_body['train_id'])
     }
-
-    model = Model(req_body['config'], req_body['user_id'], req_body['train_id'], req_body['project_no'])
+    try:
+        model = Model(req_body['config'], req_body['user_id'], req_body['train_id'], req_body['project_no'])
+    except ValueError as e:
+        res = {'status_code': 400, 'msg': e.args[0], 'train_id': req_body['train_id']}
+        reply_request(f'https://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply', res, headers)
+        return
 
     #data, label = get_dataset(req_body['data_set'], model.model)
     try:

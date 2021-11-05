@@ -4,9 +4,9 @@ import datetime
 import zipfile
 from urllib import request as req
 import tensorflow as tf
+import tensorflow_addons as tfa
 from numba import cuda
 import requests
-
 
 class Model:
     __epochs = 10
@@ -82,7 +82,6 @@ class Model:
                 batch_size=self.__batch_size,
                 validation_split=self.__validation_split,
                 callbacks=callbacks,
-
             )
 
         return None
@@ -131,6 +130,6 @@ def get_model_from_url(url, id):
         print('extracting...')
 
     # Load model
-    model = tf.keras.models.load_model(f'./{id}/Model')
+    model = tf.keras.models.load_model(f'./{id}/Model',  custom_objects={'Addons>AdamW': tfa.optimizers.AdamW})
 
     return model

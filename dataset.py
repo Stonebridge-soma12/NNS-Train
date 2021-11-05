@@ -25,6 +25,8 @@ def load_data(data_config, shape):
     if data_config['normalization']['usage'] == True:
         if data_config['normalization']['method'] == 'Image':
             df = get_image_data_from_csv(df, shape)
+        else:
+            df = df.drop(axis=1, columns=[data_config['label']])
     else:
         df = df.drop(axis=1, columns=[data_config['label']])
 
@@ -39,6 +41,8 @@ def get_input_shape(data, shape):
     for i, val in enumerate(new_shape):
         if val == None:
             new_shape[i] = -1
+
+    print(new_shape)
 
     return new_shape
 
@@ -74,7 +78,6 @@ def get_dataset(data_config, model):
         # preprocessing for image data
         x = np.array(data)
         y = np.array(label)
-
         x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.3, stratify=y)
 
         datagen = ImageDataGenerator(rescale=1.0/255.0, validation_split=0.3)
