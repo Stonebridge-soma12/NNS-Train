@@ -52,7 +52,7 @@ def normalization(data, norm):
     method = norm['method']
 
     if norm['usage'] == False:
-        res = data.to_numpy()
+        res = data
     else:
         if method == 'MinMax':
             mms = MinMaxScaler()
@@ -60,8 +60,6 @@ def normalization(data, norm):
         elif method == 'Standard':
             ss = StandardScaler()
             res = ss.fit_transform(res)
-        else:
-            res = data.to_numpy()
 
     return res
 
@@ -72,14 +70,12 @@ def get_dataset(data_config, model):
     data, label = load_data(data_config, shape)
     norm_type = data_config['normalization']
 
-    print(norm_type)
+    x = np.array(data)
+    y = np.array(label)
+    x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.3, stratify=y, shuffle=data_config['shuffle'])
 
     if norm_type['method'] == 'Image':
         # preprocessing for image data
-        x = np.array(data)
-        y = np.array(label)
-        x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.3, stratify=y)
-
         datagen = ImageDataGenerator(rescale=1.0/255.0, validation_split=0.3)
         train = datagen.flow(
             x=x_train, y=y_train, subset='training'
@@ -91,8 +87,16 @@ def get_dataset(data_config, model):
         data = [train, valid]
         label = []
     else:
-        data = normalization(data, norm_type)
-        data = data.reshape(get_input_shape(data, shape))
+        x_train = normalization(x_train, norm_type)
+        x_val = normalization(x_val, norm_type)
+
+        train = x_train.reshape(get_input_shape(x_train, shape))
+        valid = x_val.reshape(get_input_shape(x_val, shape))
+        data = [train, valid]
+        label = [y_train, y_val]
+
+    print(data)
+    print(label)
 
     return data, label
 

@@ -81,7 +81,7 @@ def train_callback(ch, method, props, body):
            res, headers)
        return
     except ValueError as e :
-        res = {'status_code': 500, 'msg': e, 'train_id': req_body['train_id']}
+        res = {'status_code': 500, 'msg': e.args[0], 'train_id': req_body['train_id']}
         reply_request(
             f'https://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply',
             res, headers)

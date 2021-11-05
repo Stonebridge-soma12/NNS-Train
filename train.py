@@ -77,7 +77,8 @@ class Model:
             )
         else:
             self.model.fit(
-                data, label,
+                data[0], label[0],
+                validation_data=(data[1], label[1]),
                 epochs=self.__epochs,
                 batch_size=self.__batch_size,
                 validation_split=self.__validation_split,
