@@ -54,7 +54,6 @@ def normalization(data, norm):
         else:
             res = data.to_numpy()
 
-
     return res
 
 
