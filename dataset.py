@@ -8,15 +8,23 @@ import numpy as np
 
 
 def load_data(data_config, shape):
+    print('loading dataset...')
     try:
         df = pd.read_csv(data_config['train_uri'])
     except ConnectionError as e:
         print(e)
+        return
+    except:
+        print(f'failed to read dataset from {data_config["train_uri"]}')
+        return
 
-    label = df[data_config['label']].to_numpy()
+    print(data_config)
 
-    if data_config['normalization']['method'] == 'Image':
-        df = get_image_data_from_csv(df, shape)
+    label = df[data_config['label']]
+    
+    if data_config['normalization']['usage'] == True:
+        if data_config['normalization']['method'] == 'Image':
+            df = get_image_data_from_csv(df, shape)
     else:
         df = df.drop(axis=1, columns=[data_config['label']])
 
