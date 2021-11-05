@@ -67,7 +67,7 @@ class Model:
     def fit(self, data, label):
         callbacks = self.__get_callbacks()
 
-        if label == None:
+        if len(label) == 0:
             self.model.fit(
                 data[0],
                 validation_data=data[1],

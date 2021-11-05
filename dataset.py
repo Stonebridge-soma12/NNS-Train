@@ -14,7 +14,7 @@ def load_data(data_config, shape):
     except ConnectionError as e:
         return e
 
-    label = df[data_config['label']]
+    label = df[data_config['label']].to_numpy()
 
     if data_config['normalization']['method'] == 'Image':
         df = get_image_data_from_csv(df, shape)
@@ -81,7 +81,7 @@ def get_dataset(data_config, model):
         )
         
         data = [train, valid]
-        label = None
+        label = []
     else:
         data = normalization(data, norm_type)
         data = data.reshape(get_input_shape(data, shape))
