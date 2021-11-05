@@ -1,4 +1,3 @@
-import numpy
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.model_selection import train_test_split
@@ -12,7 +11,7 @@ def load_data(data_config, shape):
     try:
         df = pd.read_csv(data_config['train_uri'])
     except ConnectionError as e:
-        return e
+        print(e)
 
     label = df[data_config['label']].to_numpy()
 
@@ -49,8 +48,6 @@ def normalization(data, norm):
         elif method == 'Standard':
             ss = StandardScaler()
             res = ss.fit_transform(res)
-        elif method == 'Image':
-            None
         else:
             res = data.to_numpy()
 
