@@ -40,16 +40,20 @@ def normalization(data, norm):
     res = data
     method = norm['method']
 
-    if method == 'MinMax':
-        mms = MinMaxScaler()
-        res = mms.fit_transform(res)
-    elif method == 'Standard':
-        ss = StandardScaler()
-        res = ss.fit_transform(res)
-    elif method == 'Image':
-        None
-    else:
+    if norm['usage'] == False:
         res = data.to_numpy()
+    else:
+        if method == 'MinMax':
+            mms = MinMaxScaler()
+            res = mms.fit_transform(res)
+        elif method == 'Standard':
+            ss = StandardScaler()
+            res = ss.fit_transform(res)
+        elif method == 'Image':
+            None
+        else:
+            res = data.to_numpy()
+
 
     return res
 
