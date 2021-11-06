@@ -5,6 +5,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import cv2
 from urllib import request as req
 import numpy as np
+import tensorflow as tf
 
 
 def load_data(data_config, shape):
