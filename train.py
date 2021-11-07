@@ -64,16 +64,19 @@ class Model:
 
         return callbacks
 
-    def fit(self, data, label):
+    def fit(self, data, label, kind):
         callbacks = self.__get_callbacks()
 
-        if len(label) == 0:
+        print('start training')
+
+        if kind == 'IMAGES':
             self.model.fit(
                 data[0],
                 validation_data=data[1],
                 epochs=self.__epochs,
                 batch_size=self.__batch_size,
                 callbacks=callbacks,
+                verbose=1
             )
         else:
             self.model.fit(
@@ -83,9 +86,13 @@ class Model:
                 batch_size=self.__batch_size,
                 validation_split=self.__validation_split,
                 callbacks=callbacks,
+                verbose=1
             )
 
-        return None
+        print('train finished')
+        shutil.rmtree('./dataset')
+
+        return
 
     def save_model(self):
         current = datetime.datetime.now()

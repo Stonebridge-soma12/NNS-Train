@@ -63,7 +63,7 @@ def train_callback(ch, method, props, body):
     reply_request(f'https://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/log', res, headers)
 
     try:
-        model.fit(data, label)
+        model.fit(data, label, req_body['data_set']['kind'])
     except tf.errors.InvalidArgumentError as e:
         res = {'status_code': 500, 'msg': e, 'train_id': req_body['train_id']}
         reply_request(f'https://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply', res, headers)

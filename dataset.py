@@ -5,33 +5,36 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import cv2
 from urllib import request as req
 import numpy as np
+import zipfile
 import tensorflow as tf
 
 
-def load_data(data_config, shape):
+def load_data(data_config):
     print('loading dataset...')
-    try:
-        df = pd.read_csv(data_config['train_uri'])
-    except ConnectionError as e:
-        print(e)
-        return
-    except:
-        print(f'failed to read dataset from {data_config["train_uri"]}')
-        return
+    data_type = data_config['kind']
 
-    print(data_config)
+    data = []
+    label = []
 
-    label = df[data_config['label']]
-    
-    if data_config['normalization']['usage'] == True:
-        if data_config['normalization']['method'] == 'Image':
-            df = get_image_data_from_csv(df, shape)
-        else:
-            df = df.drop(axis=1, columns=[data_config['label']])
-    else:
-        df = df.drop(axis=1, columns=[data_config['label']])
+    if data_type == 'TEXT':
+        data = pd.read_csv(data_config['train_uri'])
+        label = data[data_config['label']]
+        data = data.drop(axis=1, columns=[data_config['label']])
+    elif data_type == 'IMAGES':
+        r = req.Request(data_config['train_uri'])
+        data = open('./dataset.zip', 'wb')
+        data.write(req.urlopen(r).read())
+        data.close()
 
-    return df, label
+        with zipfile.ZipFile('./dataset.zip', 'r') as zip_ref:
+            zip_ref.extractall('./dataset')
+
+        data = []
+        label = []
+
+    print('load dataset successful')
+
+    return data, label
 
 
 def get_input_shape(data, shape):
@@ -68,26 +71,42 @@ def normalization(data, norm):
 def get_dataset(data_config, model):
     shape = list(*model.layers[0].output_shape)
 
-    data, label = load_data(data_config, shape)
+    data, label = load_data(data_config)
     norm_type = data_config['normalization']
 
-    x = np.array(data)
-    y = np.array(label)
-    x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.3, stratify=y, shuffle=data_config['shuffle'])
-
-    if norm_type['method'] == 'Image':
+    if data_config['kind'] == 'IMAGES':
         # preprocessing for image data
         datagen = ImageDataGenerator(rescale=1.0/255.0, validation_split=0.3)
-        train = datagen.flow(
-            x=x_train, y=y_train, subset='training'
+
+        color_mode = 'rgb'
+        if shape[3] == 1:
+            color_mode = 'grayscale'
+        elif shape[3] == 4:
+            color_mode = 'rgba'
+
+        train = datagen.flow_from_directory(
+            directory='./dataset',
+            shuffle=data_config['shuffle'],
+            subset='training',
+            color_mode=color_mode,
+            target_size=shape[1:3]
         )
-        valid = datagen.flow(
-            x=x_val, y=y_val, subset='validation'
+        valid = datagen.flow_from_directory(
+            directory='./dataset',
+            shuffle=data_config['shuffle'],
+            subset='validation',
+            color_mode=color_mode,
+            target_size=shape[1:3]
         )
-        
+
         data = [train, valid]
         label = []
     else:
+        x = np.array(data)
+        y = np.array(label)
+        x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.3, stratify=y,
+                                                          shuffle=data_config['shuffle'])
+
         x_train = normalization(x_train, norm_type)
         x_val = normalization(x_val, norm_type)
 
