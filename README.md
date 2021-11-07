@@ -48,7 +48,8 @@
     "normalization": {
       "usage": true,
       "method": "MinMax"
-    }
+    },
+    "kind": "TEXT"
   }
 }
 
