@@ -90,7 +90,10 @@ class Model:
             )
 
         print('train finished')
-        shutil.rmtree('./dataset')
+        try:
+            shutil.rmtree('./dataset')
+        except:
+            None
 
         return
 
