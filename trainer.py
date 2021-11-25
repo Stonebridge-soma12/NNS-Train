@@ -93,6 +93,7 @@ def train_callback(ch, method, props, body):
             res, headers)
         return
     except:
+        print("error occurred while training.")
         res = {'status_code': 500, 'msg': 'internal server error', 'train_id': req_body['train_id']}
         reply_request(
             f'https://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply',
@@ -110,7 +111,7 @@ def train_callback(ch, method, props, body):
     # device = cuda.get_current_device()
     # device.reset()
 
-    res = {'status_code': 200, 'msg': '', 'train_id': req_body['train_id']}
+    res = {'status_code': 200, 'msg': 'Train finished successfully.', 'train_id': req_body['train_id']}
     reply_request(f'https://{os.environ["API_SERVER"]}/api/project/{req_body["project_no"]}/train/{req_body["train_id"]}/reply', res, headers)
     return
 
