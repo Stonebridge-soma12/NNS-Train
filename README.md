@@ -6,7 +6,7 @@
 
 - 아래 구조중 Auto Scaling group training server의 각 GPU 인스턴스에 올라가는 모듈이다.
 
-![Server architecture](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/fb033e2e-dcf5-4973-9509-371100390d0e/1631782278776.png)
+![Server architecture](architecture.png)
 
 
 ## Request body
