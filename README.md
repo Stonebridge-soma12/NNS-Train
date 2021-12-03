@@ -4,6 +4,11 @@
 
 각 인스턴스마다 실행되어 메세지 큐로 부터 들어오는 학습 요청을 기다린다.
 
+- 아래 구조중 Auto Scaling group training server의 각 GPU 인스턴스에 올라가는 모듈이다.
+
+![Server architecture](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/fb033e2e-dcf5-4973-9509-371100390d0e/1631782278776.png)
+
+
 ## Request body
 
 - 메세지큐에 전달되는 Body는 다음과 같은 형태다.
@@ -54,3 +59,4 @@
 }
 
 ```
+
